@@ -36,6 +36,7 @@ class ImgFigure extends React.Component {
   }
 }
 
+// 舞台stage控件
 class AppComponent extends React.Component {
   render() {
 

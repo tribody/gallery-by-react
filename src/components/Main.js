@@ -9,7 +9,7 @@ var imageDatas = require('../data/imageDatas.json');
 
 //利用自执行函数，将图片名信息转成图片URL路径信息
 imageDatas = (function (imageDatasArr) {
-  for (let i=0, j=imageDatasArr.length; i<j; i++) {
+  for (var i=0, j=imageDatasArr.length; i<j; i++) {
     var singleImageData = imageDatasArr[i];
 
     singleImageData.imageURL = require('../images/' + singleImageData.fileName);
@@ -74,11 +74,16 @@ var ImgFigure = React.createClass({
       styleObj.zIndex = 11;
     }
 
-    var imgFiguresClassName = 'img-figures';
-      imgFiguresClassName += this.props.arrange.isInverse ? ' is-inverse' : '';
+    var imgFigureClassName = 'img-figure';
+      imgFigureClassName += this.props.arrange.isInverse ? ' is-inverse' : '';
+
+    // debugger;
+
+    //注意：嵌套在其它component中的ref不属于这个render()函数所在的component，
+    //因此无法拿到该嵌入组件，但是可以利用ref的回调属性获取该组件即将子组件设置为父组件的一个属性，就可以访问它了
 
     return (
-      <figure className={imgFiguresClassName} style={styleObj} onClick={this.handleClick}>
+      <figure className={imgFigureClassName} ref={function(comp) {this.imgFigure = comp;}.bind(this)} style={styleObj} onClick={this.handleClick}>
         <img src={this.props.data.imageURL}
              alt={this.props.data.title}
         />
@@ -92,8 +97,9 @@ var ImgFigure = React.createClass({
           </figcaption>
         </figure>
     );
+
   }
-})
+});
 
 // 控制组件
 var ControllerUnit = React.createClass({
@@ -111,15 +117,15 @@ var ControllerUnit = React.createClass({
   },
 
   render: function () {
-    var controllerUnitClassName = "controller-unit";
+    var controllerUnitClassName = 'controller-unit';
 
     // 如果对应的是居中的图片，显示控制按钮居中态
     if (this.props.arrange.isCenter){
-      controllerUnitClassName += " is-center";
+      controllerUnitClassName += ' is-center';
 
       // 如果通知对应的是翻转图片，显示控制按钮的翻转态
       if (this.props.arrange.isInverse) {
-        controllerUnitClassName += " is-inverse";
+        controllerUnitClassName += ' is-inverse';
       }
     }
 
@@ -128,7 +134,7 @@ var ControllerUnit = React.createClass({
     );
 
   }
-})
+});
 
 // 舞台stage控件
 var GalleryByReactApp = React.createClass({
@@ -190,6 +196,8 @@ var GalleryByReactApp = React.createClass({
 
         imgsArrangeCenterArr = imgsArrangeArr.splice(centerIndex, 1);
 
+        // debugger;
+
         // 首先居中 centerIndex 的图片，剧中的 centerIndex 的图片不需要旋转
         imgsArrangeCenterArr[0] = {
           pos: centerPos,
@@ -212,6 +220,8 @@ var GalleryByReactApp = React.createClass({
             isCenter: false
           };
         });
+
+        // debugger;
 
         // 布局左右两侧的图片
         for (var i=0, j=imgsArrangeArr.length, k=j/2; i<j; i++) {
@@ -278,18 +288,19 @@ var GalleryByReactApp = React.createClass({
    },
 
    // 组件加载以后，为每张图片计算其位置的范围
-   componentDidMout: function () {
+   componentDidMount: function () {
+
 
     // 首先拿到舞台的大小
-    var stageDOM = React.findDOMNode(this.refs.stage),
+    var stageDOM = this.refs.stage,
         stageW = stageDOM.scrollWidth,
         stageH = stageDOM.scrollHeight,
         halfStageW = Math.ceil(stageW / 2),
-        halfStageH = Math.ceil(stageH /2);
+        halfStageH = Math.ceil(stageH / 2);
 
-
+    // debugger;
     // 拿到一个imageFigure的大小
-    var imgFigureDOM = React.findDOMNode(this.refs.imgFigure),
+    var imgFigureDOM = this.refs.imgFigure0.imgFigure,
         imgW = imgFigureDOM.scrollWidth,
         imgH = imgFigureDOM.scrollHeight,
         halfImgW = Math.ceil(imgW / 2),
@@ -303,7 +314,7 @@ var GalleryByReactApp = React.createClass({
 
     // 计算左侧，右侧区域图片排布位置的取值范围
     this.Constant.hPosRange.leftSecX[0] = -halfImgW;
-    this.Constant.hposRange.leftSecX[1] = halfStageW - halfImgW * 3;
+    this.Constant.hPosRange.leftSecX[1] = halfStageW - halfImgW * 3;
     this.Constant.hPosRange.rightSecX[0] = halfStageW + halfImgW;
     this.Constant.hPosRange.rightSecX[1] = stageW - halfImgW;
     this.Constant.hPosRange.y[0] = -halfImgH;
@@ -315,6 +326,8 @@ var GalleryByReactApp = React.createClass({
     this.Constant.vPosRange.x[0] = halfStageH - imgW;
     this.Constant.vPosRange.x[1] = halfStageW;
 
+    // debugger;
+
     this.rearrange(0);
    },
 
@@ -325,7 +338,7 @@ var GalleryByReactApp = React.createClass({
 
     imageDatas.forEach(function (value, index) {
 
-      if (this.state.imgsArrangeArr[index]) {
+      if (!this.state.imgsArrangeArr[index]) {
         this.state.imgsArrangeArr[index] = {
           pos: {
             left: 0,
@@ -341,7 +354,10 @@ var GalleryByReactApp = React.createClass({
 
       controllerUnits.push(<ControllerUnit key={index} arrange={this.state.imgsArrangeArr[index]} inverse={this.inverse(index)} center={this.center(index)}/>);
 
+
     }.bind(this));
+
+    // debugger;
 
     return (
       <section className="stage" ref="stage">
